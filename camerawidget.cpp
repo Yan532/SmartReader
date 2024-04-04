@@ -2,6 +2,7 @@
 #include "ui_camerawidget.h"
 #include <QMessageBox>
 #include <QDebug>
+#include <QApplication>
 
 Camerawidget::Camerawidget(QWidget *parent) :
     QWidget(parent),
