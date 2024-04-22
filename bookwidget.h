@@ -18,6 +18,7 @@ public:
 signals:
     void changereadmode();
     void exitbook();
+    void book_listen();
 
 public slots:
     void on_normalButton_clicked();
@@ -29,6 +30,9 @@ public slots:
     void on_preButton_clicked();
     void createpdfpages(QList<QImage>);
     void createfilepages(QList<QString>);
+
+private slots:
+    void on_listenButton_clicked();
 
 private:
     Ui::BookWidget *ui;

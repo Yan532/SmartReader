@@ -6,8 +6,23 @@
 #include "readwidget.h"
 #include "bookwidget.h"
 #include "filehandle.h"
+#include "http.h"
 #include <QSet>
-
+#include <QMediaPlayer>
+#include <QMediaPlaylist>
+#include <QBuffer>
+#include <QTextCodec>
+#include <QMap>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
+#include <QEventLoop>
+#include <QJsonDocument>
+#include <QJsonParseError>
+#include <QJsonObject>
+#include <QJsonValue>
+#include <QJsonArray>
+#include <QFile>
 
 
 
@@ -29,6 +44,10 @@ class StartWindow : public QMainWindow
 public:
     StartWindow(QWidget *parent = nullptr);
     ~StartWindow();
+    QString getaccesstoken(const QString&,const QString&);
+    void Speech_result(const QList<QString>&);
+    QByteArray imageBaseTo64ToUrlEncode(QString imagePth);
+    void getaccess_token();
 
 signals:
     void sendinfo(const QString& path,const QString& suffix);
@@ -48,6 +67,9 @@ public slots:
     void showreadwindow();
     void exitreadwidget();
     void exitbookwidget();
+    void OCR_request();
+    void Speech_request();
+
 
 private:
     Ui::StartWindow *ui;
@@ -61,5 +83,8 @@ private:
     QList<QImage> pdfimages;
     QList<QString> pdftexts;
     QList<QString> texts;
+    QString OCR_access_token;
+    QString Speech_access_token;
+    QMediaPlayer* player;
 };
 #endif // STARTWINDOW_H

@@ -15,6 +15,8 @@ BookWidget::BookWidget(QWidget *parent) :
 {
     ui->setupUi(this);
     ui->frame->hide();
+    ui->playButton->setStyleSheet("background-image: url(:/pic/音乐播放器_05.png);");
+    ui->pauseButton->setStyleSheet("background-image: url(:/pic/音乐播放器_06.png);");
     ui->stackedWidget->removeWidget(ui->page);
     ui->stackedWidget->removeWidget(ui->page_2);
 //    QWidget *page = new QWidget;
@@ -105,7 +107,7 @@ void BookWidget::createpdfpages(QList<QImage> images){
 }
 
 void BookWidget::createfilepages(QList<QString> lines){
-    ui->menuButton->resize(ui->menuButton->width()/2,ui->menuButton->height());
+    ui->menuButton->resize(ui->menuButton->width()/3,ui->menuButton->height());
     int Current_height = 0;
     QString texts;
     QWidget *page = new QWidget;
@@ -142,4 +144,9 @@ void BookWidget::createfilepages(QList<QString> lines){
             Current_height = 0;
         }
     }
+}
+
+void BookWidget::on_listenButton_clicked()
+{
+    emit book_listen();
 }

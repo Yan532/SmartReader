@@ -5,6 +5,21 @@
 #include <QDebug>
 #include <QMessageBox>
 #include <QTextStream>
+#include <QHostInfo>
+#include <QProcess>
+
+/* OCR Url */
+const QString OCR_Url = "https://aip.baidubce.com/rest/2.0/ocr/v1/general_basic?access_token=%1";
+const QString OCRAPI_key = "wSweAjPU2LiAlHqr9rhF8qt8";
+const QString OCRAPI_Secret = "NYePOhZOts5nNxqxKtRQ86ZT5A5U0DwO";
+
+/* Speech Url */
+const QString speech_Url = "https://tsn.baidu.com/text2audio";
+const QString speechAPI_key = "NwV0ZDXZ2GHlj0tQXYNKYKv9";
+const QString speech_Secret = "yrnJncB6m2NJFCBQrFl7RoXJRKyZjbM4";
+
+/* Access_token Url */
+const QString access_tokenUrl = "https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=%1&client_secret=%2&";
 
 int Column = 0;
 int Row = 0;
@@ -15,6 +30,45 @@ StartWindow::StartWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    getaccess_token();
+    QProcess *m_process = new QProcess;
+    QStringList arguments;
+    arguments << "-c" << "0" << "cset" << "numid=2" << "on";
+    m_process->start("amixer",arguments);
+    m_process->waitForFinished();
+    arguments.clear();
+    m_process->close();
+    arguments << "-c" << "0" << "cset" << "numid=1" << "60%";
+    m_process->start("amixer",arguments);
+    m_process->waitForFinished();
+    arguments.clear();
+    m_process->close();
+    arguments << "-c" << "0" << "cset" << "numid=3" << "60%";
+    m_process->start("amixer",arguments);
+    m_process->waitForFinished();
+    arguments.clear();
+    m_process->close();
+    arguments << "-c" << "0" << "cset" << "numid=7" << "off";
+    m_process->start("amixer",arguments);
+    m_process->waitForFinished();
+    arguments.clear();
+    m_process->close();
+    arguments << "-c" << "0" << "cset" << "numid=15" << "1";
+    m_process->start("amixer",arguments);
+    m_process->waitForFinished();
+    arguments.clear();
+    m_process->close();
+    arguments << "-c" << "0" << "cset" << "numid=16" << "2";
+    m_process->start("amixer",arguments);
+    m_process->waitForFinished();
+    arguments.clear();
+    m_process->close();
+    arguments << "-c" << "0" << "cset" << "numid=17" << "2";
+    m_process->start("amixer",arguments);
+    m_process->waitForFinished();
+    arguments.clear();
+    m_process->close();
+
     camera = new Camerawidget();
 
     filehandle = new Filehandle;
@@ -23,6 +77,8 @@ StartWindow::StartWindow(QWidget *parent)
     connect(filehandle,&Filehandle::sendText,this,&StartWindow::getText);
     connect(filehandle,&Filehandle::showreadwidget,this,&StartWindow::showreadwindow);
 
+    ui->playButton->setStyleSheet("background-image: url(:/pic/音乐播放器_05.png);");
+    ui->pauseButton->setStyleSheet("background-image: url(:/pic/音乐播放器_06.png);");
 }
 
 StartWindow::~StartWindow()
@@ -34,6 +90,7 @@ void StartWindow::on_CaptureButton_clicked()
 {
 
     connect(camera,&Camerawidget::exitcamera,this,&StartWindow::closecamerawidget);
+    connect(camera,&Camerawidget::OCR,this,&StartWindow::OCR_request);
     camera->showFullScreen();
 
 }
@@ -113,6 +170,7 @@ void StartWindow::changetoreadmode()
     bookreadmode->close();
     disconnect(bookreadmode,&BookWidget::changereadmode,this,&StartWindow::changetoreadmode);
     disconnect(bookreadmode,&BookWidget::exitbook,this,&StartWindow::exitbookwidget);
+    disconnect(bookreadmode,&BookWidget::book_listen,this,&StartWindow::Speech_request);
     if(current_suffix == "pdf"){
         disconnect(this,&StartWindow::sendimages,bookreadmode,&BookWidget::createpdfpages);
     }else{
@@ -124,6 +182,7 @@ void StartWindow::changetoreadmode()
     normalreadmode = new ReadWidget;
     connect(normalreadmode,&ReadWidget::changebookmode,this,&StartWindow::chengetobookmode);
     connect(normalreadmode,&ReadWidget::exitread,this,&StartWindow::exitreadwidget);
+    connect(normalreadmode,&ReadWidget::send_speech,this,&StartWindow::Speech_request);
     if(current_suffix == "pdf"){
         connect(this,&StartWindow::sendimages,normalreadmode,&ReadWidget::createpdfpages);
         emit sendimages(this->pdfimages);
@@ -139,6 +198,7 @@ void StartWindow::chengetobookmode()
     normalreadmode->close();
     disconnect(normalreadmode,&ReadWidget::changebookmode,this,&StartWindow::chengetobookmode);
     disconnect(normalreadmode,&ReadWidget::exitread,this,&StartWindow::exitreadwidget);
+    disconnect(normalreadmode,&ReadWidget::send_speech,this,&StartWindow::Speech_request);
     if(current_suffix == "pdf"){
         disconnect(this,&StartWindow::sendimages,normalreadmode,&ReadWidget::createpdfpages);
     }else{
@@ -152,6 +212,7 @@ void StartWindow::chengetobookmode()
     bookreadmode = new BookWidget;
     connect(bookreadmode,&BookWidget::changereadmode,this,&StartWindow::changetoreadmode);
     connect(bookreadmode,&BookWidget::exitbook,this,&StartWindow::exitbookwidget);
+    connect(bookreadmode,&BookWidget::book_listen,this,&StartWindow::Speech_request);
     if(current_suffix == "pdf"){
         connect(this,&StartWindow::sendimages,bookreadmode,&BookWidget::createpdfpages);
         emit sendimages(this->pdfimages);
@@ -176,6 +237,7 @@ void StartWindow::showreadwindow(){
     normalreadmode = new ReadWidget;
     connect(normalreadmode,&ReadWidget::changebookmode,this,&StartWindow::chengetobookmode);
     connect(normalreadmode,&ReadWidget::exitread,this,&StartWindow::exitreadwidget);
+    connect(normalreadmode,&ReadWidget::send_speech,this,&StartWindow::Speech_request);
     if(current_suffix == "pdf"){
         connect(this,&StartWindow::sendimages,normalreadmode,&ReadWidget::createpdfpages);
         emit sendimages(this->pdfimages);
@@ -190,6 +252,7 @@ void StartWindow::exitbookwidget(){
     bookreadmode->close();
     disconnect(bookreadmode,&BookWidget::changereadmode,this,&StartWindow::changetoreadmode);
     disconnect(bookreadmode,&BookWidget::exitbook,this,&StartWindow::exitbookwidget);
+    disconnect(bookreadmode,&BookWidget::book_listen,this,&StartWindow::Speech_request);
     if(current_suffix == "pdf"){
         disconnect(this,&StartWindow::sendimages,bookreadmode,&BookWidget::createpdfpages);
     }else{
@@ -203,6 +266,7 @@ void StartWindow::exitreadwidget(){
     normalreadmode->close();
     disconnect(normalreadmode,&ReadWidget::changebookmode,this,&StartWindow::chengetobookmode);
     disconnect(normalreadmode,&ReadWidget::exitread,this,&StartWindow::exitreadwidget);
+    disconnect(normalreadmode,&ReadWidget::send_speech,this,&StartWindow::Speech_request);
     if(current_suffix == "pdf"){
         disconnect(this,&StartWindow::sendimages,normalreadmode,&ReadWidget::createpdfpages);
     }else{
@@ -210,4 +274,117 @@ void StartWindow::exitreadwidget(){
     }
     delete normalreadmode;
     normalreadmode = nullptr;
+}
+
+void StartWindow::Speech_request(){
+    Speech_result(texts);
+}
+
+void StartWindow::OCR_request(){
+    QString imgUrl = QString(OCR_Url).arg(OCR_access_token);
+    qDebug() << imgUrl;
+    QByteArray img = imageBaseTo64ToUrlEncode("/root/test.jpg");    //image=xxxxxxx
+//    qDebug() << img;
+    QByteArray imgData = "image=" + img;               //body
+    QByteArray replyData;                 //保存回复信息
+    QMap<QString, QString> header;        //封装头部信息
+    header.insert(QString("Content-Type"), QString("application/x-www-form-urlencoded"));
+    bool result = Http::post_sync(imgUrl, header, imgData, replyData);
+//    qDebug() << replyData;
+    if(result){
+    qDebug() << "Request sent successfully!";
+    // 解析JSON响应
+    QJsonDocument jsonResponse = QJsonDocument::fromJson(replyData);
+    QJsonObject jsonObject = jsonResponse.object();
+    if (jsonObject.contains("words_result")) {
+       QJsonArray wordsArray = jsonObject.value("words_result").toArray();
+       foreach (const QJsonValue &value, wordsArray) {
+            qDebug() << "识别结果:" << value.toObject().value("words").toString();
+       }
+    }
+  }
+}
+
+void StartWindow::Speech_result(const QList<QString>& texts){
+        QString encodedText = QUrl::toPercentEncoding(QUrl::toPercentEncoding("这是一段测试文本,百度你好,1+1=2"));
+        QByteArray postData;
+        postData.append("tex="+encodedText.toUtf8());
+        postData.append("&tok="+Speech_access_token.toUtf8());
+        postData.append("&cuid="+QHostInfo::localHostName());
+        postData.append("&ctp=1");
+        postData.append("&lan=zh");
+        postData.append("&vol=9");
+        postData.append("&per=3");
+        postData.append("&spd=5");
+        postData.append("&aue=3");
+        QByteArray audioData;                 //保存回复信息
+
+        QMap<QString, QString> header;        //封装头部信息
+        header.insert(QString("Content-Type"), QString("application/x-www-form-urlencoded"));
+        bool result = Http::post_sync(speech_Url, header,postData,audioData);
+//        qDebug() << audioData;
+        if(result){
+            qDebug() << "Request sent successfully!";
+            // 保存音频文件
+            QFile file("./output.mp3");
+            if (file.open(QIODevice::WriteOnly)) {
+                file.write(audioData);
+                file.close();
+                player = new QMediaPlayer;
+                player->setMedia(QUrl::fromLocalFile("/opt/SmartReader/bin/output.mp3"));
+                player->play();
+                qDebug() << "Audio file saved as output.mp3";
+            } else {
+                qDebug() << "Failed to save audio file";
+            }
+        }
+}
+
+
+QByteArray StartWindow::imageBaseTo64ToUrlEncode(QString imagePth)
+{
+       QImage image(imagePth);
+       QByteArray byte;
+       //用QByteArray构造QBuffer
+       QBuffer buf(&byte);
+       buf.open(QIODevice::WriteOnly);
+       image.save(&buf,"JPG");
+       //对图片做base64编码(不包含编码头)
+       QByteArray byteBase64 = byte.toBase64();
+       QTextCodec *codec = QTextCodec::codecForName("UTF-8");
+       QByteArray imgData = codec->fromUnicode(byteBase64).toPercentEncoding();
+       return imgData;
+}
+
+void StartWindow::getaccess_token()
+{
+        QString OCR_tokenUrl = QString(access_tokenUrl).arg(OCRAPI_key).arg(OCRAPI_Secret);
+        QString Speech_tokenUrl = QString(access_tokenUrl).arg(speechAPI_key).arg(speech_Secret);
+        QMap<QString,QString> header;
+        header.insert(QString("Content-Type"),QString("application/x-www-form-urlencoded"));
+        QByteArray requestData;//请求内容
+        QByteArray replyData;//url返回内容
+        bool result = Http::post_sync(OCR_tokenUrl,header,requestData,replyData);
+        if(result){
+            QJsonDocument jsonResponse = QJsonDocument::fromJson(replyData);
+            QJsonObject jsonObject = jsonResponse.object();
+            if (jsonObject.contains("access_token")) {
+                OCR_access_token = jsonObject.value("access_token").toString();
+                qDebug() << "Access Token:" << OCR_access_token;
+            } else {
+                qDebug() << "Error: Access Token not found in response";
+            }
+        }
+        replyData.clear();
+        result = Http::post_sync(Speech_tokenUrl,header,requestData,replyData);
+        if(result){
+            QJsonDocument jsonResponse = QJsonDocument::fromJson(replyData);
+            QJsonObject jsonObject = jsonResponse.object();
+            if (jsonObject.contains("access_token")) {
+                Speech_access_token = jsonObject.value("access_token").toString();
+                qDebug() << "Access Token:" << Speech_access_token;
+            } else {
+                qDebug() << "Error: Access Token not found in response";
+            }
+        }
 }

@@ -1,4 +1,4 @@
-QT       += core gui network
+QT       += core gui network multimedia
 CONFIG += c++11
 LIBS += -lpoppler-qt5 -lasound
 QMAKE_CXXFLAGS += -g -O0
@@ -21,8 +21,8 @@ SOURCES += \
     bookwidget.cpp \
     camerawidget.cpp \
     filehandle.cpp \
+    http.cpp \
     main.cpp \
-    myrecordc.c \
     readwidget.cpp \
     startwindow.cpp \
     v4l2api.cpp
@@ -31,7 +31,7 @@ HEADERS += \
     bookwidget.h \
     camerawidget.h \
     filehandle.h \
-    myrecordc.h \
+    http.h \
     readwidget.h \
     startwindow.h \
     v4l2api.h
@@ -46,3 +46,6 @@ FORMS += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+RESOURCES += \
+    icons.qrc

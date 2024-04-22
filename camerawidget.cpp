@@ -13,6 +13,7 @@ Camerawidget::Camerawidget(QWidget *parent) :
     ui->captureButton->setEnabled(false);
     ui->stopButton->setEnabled(false);
     ui->sendButton->setEnabled(false);
+
 }
 
 Camerawidget::~Camerawidget()
@@ -60,7 +61,7 @@ void Camerawidget::on_startButton_clicked()
 
 void Camerawidget::on_sendButton_clicked()
 {
-
+    emit OCR();
 }
 
 void Camerawidget::on_stopButton_clicked()

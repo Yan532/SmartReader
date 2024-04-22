@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>473</width>
+    <width>470</width>
     <height>437</height>
    </rect>
   </property>
@@ -18,38 +18,7 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="0">
-     <widget class="QLabel" name="label">
-      <property name="styleSheet">
-       <string notr="true">font: 63 20pt &quot;URW Bookman&quot;;</string>
-      </property>
-      <property name="text">
-       <string>BookShelf</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="1">
-     <widget class="QPushButton" name="VoiceButton">
-      <property name="text">
-       <string>语音识别</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="2">
-     <widget class="QPushButton" name="CaptureButton">
-      <property name="text">
-       <string>Capture</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="3">
-     <widget class="QPushButton" name="AddButton">
-      <property name="text">
-       <string>add new book</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="4">
+    <item row="0" column="5">
      <widget class="QPushButton" name="exitbutton">
       <property name="maximumSize">
        <size>
@@ -62,7 +31,24 @@
       </property>
      </widget>
     </item>
-    <item row="1" column="0" colspan="5">
+    <item row="0" column="4">
+     <widget class="QPushButton" name="AddButton">
+      <property name="text">
+       <string>add new book</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="0">
+     <widget class="QLabel" name="label">
+      <property name="styleSheet">
+       <string notr="true">font: 63 20pt &quot;URW Bookman&quot;;</string>
+      </property>
+      <property name="text">
+       <string>BookShelf</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0" colspan="6">
      <widget class="QScrollArea" name="scrollArea">
       <property name="minimumSize">
        <size>
@@ -78,11 +64,32 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>453</width>
+         <width>450</width>
          <height>375</height>
         </rect>
        </property>
       </widget>
+     </widget>
+    </item>
+    <item row="0" column="3">
+     <widget class="QPushButton" name="CaptureButton">
+      <property name="text">
+       <string>Capture</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QToolButton" name="playButton">
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="2">
+     <widget class="QToolButton" name="pauseButton">
+      <property name="text">
+       <string/>
+      </property>
      </widget>
     </item>
    </layout>

@@ -19,6 +19,7 @@ public:
 
 signals:
     void exitcamera();
+    void OCR();
 
 public slots:
     void on_captureButton_clicked();
