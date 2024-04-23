@@ -19,7 +19,7 @@ const QString speechAPI_key = "NwV0ZDXZ2GHlj0tQXYNKYKv9";
 const QString speech_Secret = "yrnJncB6m2NJFCBQrFl7RoXJRKyZjbM4";
 
 /* Access_token Url */
-const QString access_tokenUrl = "https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=%1&client_secret=%2&";
+const QString access_tokenUrl = "https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=%1&client_secret=%2";
 
 int Column = 0;
 int Row = 0;
@@ -29,6 +29,8 @@ StartWindow::StartWindow(QWidget *parent)
     , ui(new Ui::StartWindow)
 {
     ui->setupUi(this);
+    ui->playerButton->setEnabled(false);
+    ui->oepnButton->setEnabled(false);
 
     getaccess_token();
     QProcess *m_process = new QProcess;
@@ -77,8 +79,6 @@ StartWindow::StartWindow(QWidget *parent)
     connect(filehandle,&Filehandle::sendText,this,&StartWindow::getText);
     connect(filehandle,&Filehandle::showreadwidget,this,&StartWindow::showreadwindow);
 
-    ui->playButton->setStyleSheet("background-image: url(:/pic/音乐播放器_05.png);");
-    ui->pauseButton->setStyleSheet("background-image: url(:/pic/音乐播放器_06.png);");
 }
 
 StartWindow::~StartWindow()
@@ -141,13 +141,23 @@ void StartWindow::on_AddButton_clicked()
             }
             fileButton->show();
             connect(fileButton, &QPushButton::clicked, this, [this, bookinfo]() {
-                current_suffix = bookinfo.suffix;
-                pdfimages.clear();
-                pdftexts.clear();
-                texts.clear();
-                delete bookreadmode;
-                delete normalreadmode;
-                emit sendinfo(bookinfo.book_path,bookinfo.suffix);
+                if(current_file == bookinfo.book_name){
+                    QMessageBox msgBox(QMessageBox::Warning,"open the same file","Please choose other file to open or click open window button!!!");
+                    msgBox.exec();
+                }else{
+                    current_file = bookinfo.book_name;
+                    current_suffix = bookinfo.suffix;
+                    player->stop();
+                    pdfimages.clear();
+                    pdftexts.clear();
+                    texts.clear();
+                    ui->playerButton->setEnabled(false);
+                    delete player;
+                    delete bookreadmode;
+                    delete normalreadmode;
+                    emit sendinfo(bookinfo.book_path,bookinfo.suffix);
+                }
+
             });
         }
 
@@ -249,31 +259,13 @@ void StartWindow::showreadwindow(){
 }
 
 void StartWindow::exitbookwidget(){
-    bookreadmode->close();
-    disconnect(bookreadmode,&BookWidget::changereadmode,this,&StartWindow::changetoreadmode);
-    disconnect(bookreadmode,&BookWidget::exitbook,this,&StartWindow::exitbookwidget);
-    disconnect(bookreadmode,&BookWidget::book_listen,this,&StartWindow::Speech_request);
-    if(current_suffix == "pdf"){
-        disconnect(this,&StartWindow::sendimages,bookreadmode,&BookWidget::createpdfpages);
-    }else{
-        disconnect(this,&StartWindow::sendtexts,bookreadmode,&BookWidget::createfilepages);
-    }
-    delete bookreadmode;
-    bookreadmode = nullptr;
+    bookreadmode->hide();
+    modle = BOOK_MODLE;
 }
 
 void StartWindow::exitreadwidget(){
-    normalreadmode->close();
-    disconnect(normalreadmode,&ReadWidget::changebookmode,this,&StartWindow::chengetobookmode);
-    disconnect(normalreadmode,&ReadWidget::exitread,this,&StartWindow::exitreadwidget);
-    disconnect(normalreadmode,&ReadWidget::send_speech,this,&StartWindow::Speech_request);
-    if(current_suffix == "pdf"){
-        disconnect(this,&StartWindow::sendimages,normalreadmode,&ReadWidget::createpdfpages);
-    }else{
-        disconnect(this,&StartWindow::sendtexts,normalreadmode,&ReadWidget::createfilepages);
-    }
-    delete normalreadmode;
-    normalreadmode = nullptr;
+    normalreadmode->hide();
+    modle = NORMAL_MODLE;
 }
 
 void StartWindow::Speech_request(){
@@ -306,7 +298,11 @@ void StartWindow::OCR_request(){
 }
 
 void StartWindow::Speech_result(const QList<QString>& texts){
-        QString encodedText = QUrl::toPercentEncoding(QUrl::toPercentEncoding("这是一段测试文本,百度你好,1+1=2"));
+        QString Texts;
+        for (int i = 0; i < 5; ++i) {
+            Texts.append(texts[i]);
+        }
+        QString encodedText = QUrl::toPercentEncoding(QUrl::toPercentEncoding(Texts));
         QByteArray postData;
         postData.append("tex="+encodedText.toUtf8());
         postData.append("&tok="+Speech_access_token.toUtf8());
@@ -331,6 +327,8 @@ void StartWindow::Speech_result(const QList<QString>& texts){
                 file.write(audioData);
                 file.close();
                 player = new QMediaPlayer;
+                ui->playerButton->setEnabled(true);
+                ui->playerButton->setText("pause");
                 player->setMedia(QUrl::fromLocalFile("/opt/SmartReader/bin/output.mp3"));
                 player->play();
                 qDebug() << "Audio file saved as output.mp3";
@@ -387,4 +385,30 @@ void StartWindow::getaccess_token()
                 qDebug() << "Error: Access Token not found in response";
             }
         }
+}
+
+void StartWindow::on_oepnButton_clicked()
+{
+    switch (modle) {
+    case BOOK_MODLE:
+        bookreadmode->show();
+        break;
+    case NORMAL_MODLE:
+        normalreadmode->show();
+        break;
+    default:
+        break;
+    }
+}
+
+void StartWindow::on_playerButton_clicked()
+{
+    if(player->state() == QMediaPlayer::PlayingState){
+        player->pause();
+        ui->playerButton->setText("play");
+    }
+    else{
+        player->play();
+        ui->playerButton->setText("pause");
+    }
 }

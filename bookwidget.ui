@@ -115,22 +115,13 @@ background-color: rgb(85, 87, 83);</string>
       </spacer>
      </item>
      <item>
-      <widget class="QToolButton" name="playButton">
+      <widget class="QPushButton" name="playerButton">
        <property name="styleSheet">
-        <string notr="true">background-color: rgb(85, 87, 83);</string>
+        <string notr="true">color: rgb(255, 255, 255);
+background-color: rgb(85, 87, 83);</string>
        </property>
        <property name="text">
-        <string/>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QToolButton" name="pauseButton">
-       <property name="styleSheet">
-        <string notr="true">background-color: rgb(85, 87, 83);</string>
-       </property>
-       <property name="text">
-        <string/>
+        <string>play</string>
        </property>
       </widget>
      </item>

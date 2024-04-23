@@ -10,8 +10,6 @@ ReadWidget::ReadWidget(QWidget *parent) :
     ui(new Ui::ReadWidget)
 {
     ui->setupUi(this);
-    ui->playButton->setStyleSheet("background-image: url(:/pic/音乐播放器_05.png);");
-    ui->pauseButton->setStyleSheet("background-image: url(:/pic/音乐播放器_06.png);");
 }
 
 ReadWidget::~ReadWidget()

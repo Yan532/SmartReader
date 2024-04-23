@@ -37,6 +37,11 @@ struct BookInfo
     QString suffix;     //hou zhui ming
 };
 
+enum Modle{
+    NORMAL_MODLE,
+    BOOK_MODLE
+};
+
 class StartWindow : public QMainWindow
 {
     Q_OBJECT
@@ -69,7 +74,10 @@ public slots:
     void exitbookwidget();
     void OCR_request();
     void Speech_request();
+    void on_oepnButton_clicked();
 
+private slots:
+    void on_playerButton_clicked();
 
 private:
     Ui::StartWindow *ui;
@@ -85,6 +93,8 @@ private:
     QList<QString> texts;
     QString OCR_access_token;
     QString Speech_access_token;
-    QMediaPlayer* player;
+    QMediaPlayer* player = nullptr;
+    QString current_file;
+    Modle modle;
 };
 #endif // STARTWINDOW_H
