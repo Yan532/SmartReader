@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>470</width>
+    <width>612</width>
     <height>437</height>
    </rect>
   </property>
@@ -57,6 +57,9 @@
     </item>
     <item row="0" column="1">
      <widget class="QPushButton" name="playerButton">
+      <property name="styleSheet">
+       <string notr="true">color: rgb(0, 0, 0);</string>
+      </property>
       <property name="text">
        <string>play</string>
       </property>
@@ -78,7 +81,7 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>450</width>
+         <width>592</width>
          <height>375</height>
         </rect>
        </property>
@@ -87,8 +90,11 @@
     </item>
     <item row="0" column="2">
      <widget class="QPushButton" name="oepnButton">
+      <property name="styleSheet">
+       <string notr="true">color: rgb(0, 0, 0);</string>
+      </property>
       <property name="text">
-       <string>Open readwindow</string>
+       <string>Open window</string>
       </property>
      </widget>
     </item>

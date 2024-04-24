@@ -58,6 +58,7 @@ signals:
     void sendinfo(const QString& path,const QString& suffix);
     void sendimages(QList<QImage>);
     void sendtexts(QList<QString>);
+    void send_state(quint8);
 
 public slots:
 
@@ -75,6 +76,8 @@ public slots:
     void OCR_request();
     void Speech_request();
     void on_oepnButton_clicked();
+    void statechange();
+    void over_state(QMediaPlayer::State);
 
 private slots:
     void on_playerButton_clicked();
@@ -89,12 +92,14 @@ private:
     QList<BookInfo> bookinfolist;
     QSet<QString> fileKeys;
     QList<QImage> pdfimages;
-    QList<QString> pdftexts;
     QList<QString> texts;
     QString OCR_access_token;
     QString Speech_access_token;
     QMediaPlayer* player = nullptr;
     QString current_file;
     Modle modle;
+    quint8 media_state;
+    bool isOCR_result = false;
+    bool isfirst = true;
 };
 #endif // STARTWINDOW_H

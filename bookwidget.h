@@ -2,6 +2,7 @@
 #define BOOKWIDGET_H
 
 #include <QWidget>
+#include <QMediaPlayer>
 
 namespace Ui {
 class BookWidget;
@@ -19,6 +20,7 @@ signals:
     void changereadmode();
     void exitbook();
     void book_listen();
+    void change();
 
 public slots:
     void on_normalButton_clicked();
@@ -30,9 +32,12 @@ public slots:
     void on_preButton_clicked();
     void createpdfpages(QList<QImage>);
     void createfilepages(QList<QString>);
+    void playerstate(quint8);
 
 private slots:
     void on_listenButton_clicked();
+
+    void on_playerButton_clicked();
 
 private:
     Ui::BookWidget *ui;

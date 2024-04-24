@@ -31,6 +31,7 @@ StartWindow::StartWindow(QWidget *parent)
     ui->setupUi(this);
     ui->playerButton->setEnabled(false);
     ui->oepnButton->setEnabled(false);
+    player = new QMediaPlayer;
 
     getaccess_token();
     QProcess *m_process = new QProcess;
@@ -147,12 +148,16 @@ void StartWindow::on_AddButton_clicked()
                 }else{
                     current_file = bookinfo.book_name;
                     current_suffix = bookinfo.suffix;
-                    player->stop();
+                    isOCR_result = false;
+                    if(player != nullptr){
+                        player->stop();
+                        disconnect(player,&QMediaPlayer::stateChanged,this,&StartWindow::over_state);
+                        delete player;
+                    }
                     pdfimages.clear();
-                    pdftexts.clear();
                     texts.clear();
                     ui->playerButton->setEnabled(false);
-                    delete player;
+                    ui->oepnButton->setEnabled(true);
                     delete bookreadmode;
                     delete normalreadmode;
                     emit sendinfo(bookinfo.book_path,bookinfo.suffix);
@@ -181,6 +186,8 @@ void StartWindow::changetoreadmode()
     disconnect(bookreadmode,&BookWidget::changereadmode,this,&StartWindow::changetoreadmode);
     disconnect(bookreadmode,&BookWidget::exitbook,this,&StartWindow::exitbookwidget);
     disconnect(bookreadmode,&BookWidget::book_listen,this,&StartWindow::Speech_request);
+    disconnect(bookreadmode,&BookWidget::change,this,&StartWindow::statechange);
+    disconnect(this,&StartWindow::send_state,bookreadmode,&BookWidget::playerstate);
     if(current_suffix == "pdf"){
         disconnect(this,&StartWindow::sendimages,bookreadmode,&BookWidget::createpdfpages);
     }else{
@@ -193,6 +200,8 @@ void StartWindow::changetoreadmode()
     connect(normalreadmode,&ReadWidget::changebookmode,this,&StartWindow::chengetobookmode);
     connect(normalreadmode,&ReadWidget::exitread,this,&StartWindow::exitreadwidget);
     connect(normalreadmode,&ReadWidget::send_speech,this,&StartWindow::Speech_request);
+    connect(normalreadmode,&ReadWidget::change,this,&StartWindow::statechange);
+    connect(this,&StartWindow::send_state,normalreadmode,&ReadWidget::playerstate);
     if(current_suffix == "pdf"){
         connect(this,&StartWindow::sendimages,normalreadmode,&ReadWidget::createpdfpages);
         emit sendimages(this->pdfimages);
@@ -200,6 +209,8 @@ void StartWindow::changetoreadmode()
         connect(this,&StartWindow::sendtexts,normalreadmode,&ReadWidget::createfilepages);
         emit sendtexts(this->texts);
     }
+    modle = NORMAL_MODLE;
+    emit send_state(media_state);
     normalreadmode->showFullScreen();
 }
 
@@ -209,6 +220,8 @@ void StartWindow::chengetobookmode()
     disconnect(normalreadmode,&ReadWidget::changebookmode,this,&StartWindow::chengetobookmode);
     disconnect(normalreadmode,&ReadWidget::exitread,this,&StartWindow::exitreadwidget);
     disconnect(normalreadmode,&ReadWidget::send_speech,this,&StartWindow::Speech_request);
+    disconnect(normalreadmode,&ReadWidget::change,this,&StartWindow::statechange);
+    disconnect(this,&StartWindow::send_state,normalreadmode,&ReadWidget::playerstate);
     if(current_suffix == "pdf"){
         disconnect(this,&StartWindow::sendimages,normalreadmode,&ReadWidget::createpdfpages);
     }else{
@@ -223,6 +236,8 @@ void StartWindow::chengetobookmode()
     connect(bookreadmode,&BookWidget::changereadmode,this,&StartWindow::changetoreadmode);
     connect(bookreadmode,&BookWidget::exitbook,this,&StartWindow::exitbookwidget);
     connect(bookreadmode,&BookWidget::book_listen,this,&StartWindow::Speech_request);
+    connect(bookreadmode,&BookWidget::change,this,&StartWindow::statechange);
+    connect(this,&StartWindow::send_state,bookreadmode,&BookWidget::playerstate);
     if(current_suffix == "pdf"){
         connect(this,&StartWindow::sendimages,bookreadmode,&BookWidget::createpdfpages);
         emit sendimages(this->pdfimages);
@@ -231,6 +246,8 @@ void StartWindow::chengetobookmode()
         connect(this,&StartWindow::sendtexts,bookreadmode,&BookWidget::createfilepages);
         emit sendtexts(this->texts);
     }
+    modle = BOOK_MODLE;
+    emit send_state(media_state);
     bookreadmode->showFullScreen();
 }
 
@@ -240,7 +257,7 @@ void StartWindow::getText(QString line){
 
 void StartWindow::getpdf(QImage image,QString text){
     pdfimages.append(image);
-    pdftexts.append(text);
+    texts.append(text);
 }
 
 void StartWindow::showreadwindow(){
@@ -248,6 +265,8 @@ void StartWindow::showreadwindow(){
     connect(normalreadmode,&ReadWidget::changebookmode,this,&StartWindow::chengetobookmode);
     connect(normalreadmode,&ReadWidget::exitread,this,&StartWindow::exitreadwidget);
     connect(normalreadmode,&ReadWidget::send_speech,this,&StartWindow::Speech_request);
+    connect(normalreadmode,&ReadWidget::change,this,&StartWindow::statechange);
+    connect(this,&StartWindow::send_state,normalreadmode,&ReadWidget::playerstate);
     if(current_suffix == "pdf"){
         connect(this,&StartWindow::sendimages,normalreadmode,&ReadWidget::createpdfpages);
         emit sendimages(this->pdfimages);
@@ -285,22 +304,34 @@ void StartWindow::OCR_request(){
 //    qDebug() << replyData;
     if(result){
     qDebug() << "Request sent successfully!";
+    ui->oepnButton->setEnabled(true);
     // 解析JSON响应
     QJsonDocument jsonResponse = QJsonDocument::fromJson(replyData);
     QJsonObject jsonObject = jsonResponse.object();
     if (jsonObject.contains("words_result")) {
        QJsonArray wordsArray = jsonObject.value("words_result").toArray();
        foreach (const QJsonValue &value, wordsArray) {
-            qDebug() << "识别结果:" << value.toObject().value("words").toString();
+           texts.append(value.toObject().value("words").toString());
+           qDebug() << "识别结果:" << value.toObject().value("words").toString();
        }
+       isOCR_result = true;
+       current_suffix = "txt";
+       modle = NORMAL_MODLE;
+       isfirst = true;
     }
   }
 }
 
 void StartWindow::Speech_result(const QList<QString>& texts){
         QString Texts;
-        for (int i = 0; i < 5; ++i) {
-            Texts.append(texts[i]);
+        if(texts.length() > 5){
+            for (int i = 0; i < 5; ++i) {
+                Texts.append(texts[i]);
+            }
+        }else{
+            for (int i = 0; i < texts.length(); ++i) {
+                Texts.append(texts[i]);
+            }
         }
         QString encodedText = QUrl::toPercentEncoding(QUrl::toPercentEncoding(Texts));
         QByteArray postData;
@@ -331,6 +362,9 @@ void StartWindow::Speech_result(const QList<QString>& texts){
                 ui->playerButton->setText("pause");
                 player->setMedia(QUrl::fromLocalFile("/opt/SmartReader/bin/output.mp3"));
                 player->play();
+                media_state = QMediaPlayer::PlayingState;
+                emit send_state(media_state);
+                connect(player,&QMediaPlayer::stateChanged,this,&StartWindow::over_state);
                 qDebug() << "Audio file saved as output.mp3";
             } else {
                 qDebug() << "Failed to save audio file";
@@ -392,12 +426,46 @@ void StartWindow::on_oepnButton_clicked()
     switch (modle) {
     case BOOK_MODLE:
         bookreadmode->show();
+        emit send_state(media_state);
         break;
     case NORMAL_MODLE:
-        normalreadmode->show();
+        if(isOCR_result){
+          if(isfirst){
+            showreadwindow();
+            isfirst = false;
+          }else{
+            normalreadmode->show();
+            emit send_state(media_state);
+          }
+        }else{
+          normalreadmode->show();
+          emit send_state(media_state);
+        }
         break;
     default:
         break;
+    }
+}
+
+void StartWindow::statechange()
+{
+    if(player->state() == QMediaPlayer::PlayingState){
+        player->pause();
+        media_state = player->state();
+        ui->playerButton->setText("play");
+    }else{
+        player->play();
+        media_state = player->state();
+        ui->playerButton->setText("pause");
+    }
+}
+
+void StartWindow::over_state(QMediaPlayer::State newstate)
+{
+    if(newstate == QMediaPlayer::StoppedState){
+        ui->playerButton->setText("play");
+        media_state = QMediaPlayer::PausedState;
+        emit send_state(media_state);
     }
 }
 
@@ -405,10 +473,13 @@ void StartWindow::on_playerButton_clicked()
 {
     if(player->state() == QMediaPlayer::PlayingState){
         player->pause();
+        media_state = player->state();
+        emit send_state(media_state);
         ui->playerButton->setText("play");
-    }
-    else{
+    }else{
         player->play();
+        media_state = player->state();
+        emit send_state(media_state);
         ui->playerButton->setText("pause");
     }
 }

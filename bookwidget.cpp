@@ -145,7 +145,28 @@ void BookWidget::createfilepages(QList<QString> lines){
     }
 }
 
+void BookWidget::playerstate(quint8 state)
+{
+    if(state == QMediaPlayer::PlayingState){
+        ui->playerButton->setText("pause");
+    }else{
+        ui->playerButton->setText("play");
+    }
+}
+
 void BookWidget::on_listenButton_clicked()
 {
     emit book_listen();
 }
+
+void BookWidget::on_playerButton_clicked()
+{
+    if(ui->playerButton->text() == "play"){
+        ui->playerButton->setText("pause");
+    }else{
+        ui->playerButton->setText("play");
+    }
+    emit change();
+}
+
+
