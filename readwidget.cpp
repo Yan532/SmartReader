@@ -91,9 +91,9 @@ void ReadWidget::createfilepages(QList<QString> lines)
 void ReadWidget::playerstate(quint8 state)
 {
     if(state == QMediaPlayer::PlayingState){
-        ui->playerButton->setText("pause");
+        ui->playerButton->setText("暂停");
     }else{
-        ui->playerButton->setText("play");
+        ui->playerButton->setText("播放");
     }
 }
 
@@ -104,10 +104,10 @@ void ReadWidget::on_listenButton_clicked()
 
 void ReadWidget::on_playerButton_clicked()
 {
-    if(ui->playerButton->text() == "play"){
-        ui->playerButton->setText("pause");
+    if(ui->playerButton->text() == "播放"){
+        ui->playerButton->setText("暂停");
     }else{
-        ui->playerButton->setText("play");
+        ui->playerButton->setText("播放");
     }
     emit change();
 }

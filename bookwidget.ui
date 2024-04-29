@@ -121,7 +121,7 @@ background-color: rgb(85, 87, 83);</string>
 background-color: rgb(85, 87, 83);</string>
        </property>
        <property name="text">
-        <string>play</string>
+        <string>播放</string>
        </property>
       </widget>
      </item>

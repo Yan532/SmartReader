@@ -41,12 +41,12 @@ StartWindow::StartWindow(QWidget *parent)
     m_process->waitForFinished();
     arguments.clear();
     m_process->close();
-    arguments << "-c" << "0" << "cset" << "numid=1" << "60%";
+    arguments << "-c" << "0" << "cset" << "numid=1" << "100%";
     m_process->start("amixer",arguments);
     m_process->waitForFinished();
     arguments.clear();
     m_process->close();
-    arguments << "-c" << "0" << "cset" << "numid=3" << "60%";
+    arguments << "-c" << "0" << "cset" << "numid=3" << "100%";
     m_process->start("amixer",arguments);
     m_process->waitForFinished();
     arguments.clear();
@@ -116,7 +116,10 @@ void StartWindow::on_AddButton_clicked()
             bookinfo.suffix = fileinfo.suffix().toLower();
             fileKeys.insert(filekey);
             bookinfolist.append(bookinfo);
-            QPushButton *fileButton = new QPushButton(bookinfo.book_name,ui->scrollAreaWidgetContents);
+            QPushButton *fileButton = new QPushButton(ui->scrollAreaWidgetContents);
+            fileButton->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+            fileButton->setText(bookinfo.book_name);
+            fileButton->setStyleSheet("QPushButton{text-overflow: ellipsis;}");
             if(Column == 0){
                 fileButton->setGeometry(20+Column*(150+50),20+Row*(180+30),150,180);
                 Column++;
@@ -149,8 +152,9 @@ void StartWindow::on_AddButton_clicked()
                     current_file = bookinfo.book_name;
                     current_suffix = bookinfo.suffix;
                     isOCR_result = false;
-                    if(player != nullptr){
+                    if(!player){
                         player->stop();
+                        ui->playerButton->setText("播放");
                         disconnect(player,&QMediaPlayer::stateChanged,this,&StartWindow::over_state);
                         delete player;
                     }
@@ -292,6 +296,13 @@ void StartWindow::Speech_request(){
 }
 
 void StartWindow::OCR_request(){
+    current_file = "";
+    pdfimages.clear();
+    texts.clear();
+    ui->playerButton->setEnabled(false);
+    ui->oepnButton->setEnabled(true);
+    delete bookreadmode;
+    delete normalreadmode;
     QString imgUrl = QString(OCR_Url).arg(OCR_access_token);
     qDebug() << imgUrl;
     QByteArray img = imageBaseTo64ToUrlEncode("/root/test.jpg");    //image=xxxxxxx
@@ -359,7 +370,7 @@ void StartWindow::Speech_result(const QList<QString>& texts){
                 file.close();
                 player = new QMediaPlayer;
                 ui->playerButton->setEnabled(true);
-                ui->playerButton->setText("pause");
+                ui->playerButton->setText("暂停");
                 player->setMedia(QUrl::fromLocalFile("/opt/SmartReader/bin/output.mp3"));
                 player->play();
                 media_state = QMediaPlayer::PlayingState;
@@ -452,18 +463,18 @@ void StartWindow::statechange()
     if(player->state() == QMediaPlayer::PlayingState){
         player->pause();
         media_state = player->state();
-        ui->playerButton->setText("play");
+        ui->playerButton->setText("播放");
     }else{
         player->play();
         media_state = player->state();
-        ui->playerButton->setText("pause");
+        ui->playerButton->setText("暂停");
     }
 }
 
 void StartWindow::over_state(QMediaPlayer::State newstate)
 {
     if(newstate == QMediaPlayer::StoppedState){
-        ui->playerButton->setText("play");
+        ui->playerButton->setText("播放");
         media_state = QMediaPlayer::PausedState;
         emit send_state(media_state);
     }
@@ -475,11 +486,11 @@ void StartWindow::on_playerButton_clicked()
         player->pause();
         media_state = player->state();
         emit send_state(media_state);
-        ui->playerButton->setText("play");
+        ui->playerButton->setText("播放");
     }else{
         player->play();
         media_state = player->state();
         emit send_state(media_state);
-        ui->playerButton->setText("pause");
+        ui->playerButton->setText("暂停");
     }
 }

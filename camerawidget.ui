@@ -23,7 +23,7 @@
       </sizepolicy>
      </property>
      <property name="text">
-      <string>sendimage</string>
+      <string>发送图像</string>
      </property>
     </widget>
    </item>
@@ -36,7 +36,7 @@
       </sizepolicy>
      </property>
      <property name="text">
-      <string>exit capture</string>
+      <string>退出图像采集</string>
      </property>
     </widget>
    </item>
@@ -49,7 +49,7 @@
       </sizepolicy>
      </property>
      <property name="text">
-      <string>start</string>
+      <string>开启摄像头</string>
      </property>
     </widget>
    </item>
@@ -62,7 +62,7 @@
       </sizepolicy>
      </property>
      <property name="text">
-      <string>stop</string>
+      <string>关闭摄像头</string>
      </property>
     </widget>
    </item>
@@ -75,7 +75,7 @@
       </sizepolicy>
      </property>
      <property name="text">
-      <string>capture</string>
+      <string>捕获图像</string>
      </property>
     </widget>
    </item>

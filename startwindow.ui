@@ -24,21 +24,21 @@
        <string notr="true">font: 63 20pt &quot;URW Bookman&quot;;</string>
       </property>
       <property name="text">
-       <string>BookShelf</string>
+       <string>书架</string>
       </property>
      </widget>
     </item>
     <item row="0" column="3">
      <widget class="QPushButton" name="CaptureButton">
       <property name="text">
-       <string>Capture</string>
+       <string>图像采集</string>
       </property>
      </widget>
     </item>
     <item row="0" column="4">
      <widget class="QPushButton" name="AddButton">
       <property name="text">
-       <string>add new book</string>
+       <string>添加新文件</string>
       </property>
      </widget>
     </item>
@@ -61,7 +61,7 @@
        <string notr="true">color: rgb(0, 0, 0);</string>
       </property>
       <property name="text">
-       <string>play</string>
+       <string>播放</string>
       </property>
      </widget>
     </item>
@@ -82,7 +82,7 @@
          <x>0</x>
          <y>0</y>
          <width>592</width>
-         <height>375</height>
+         <height>371</height>
         </rect>
        </property>
       </widget>
@@ -94,7 +94,7 @@
        <string notr="true">color: rgb(0, 0, 0);</string>
       </property>
       <property name="text">
-       <string>Open window</string>
+       <string>打开阅读界面</string>
       </property>
      </widget>
     </item>
